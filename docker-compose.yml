@@ -1,0 +1,145 @@
+name: voip-server
+services:
+  # Redis for session state
+  redis:
+    image: redis:7-alpine
+    container_name: voip-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # Ollama for LLM inference
+  ollama:
+    image: ollama/ollama:latest
+    container_name: voip-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    environment:
+      - OLLAMA_ORIGINS=*
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:11434/api/tags"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Whisper STT service
+  whisper:
+    image: fedirz/faster-whisper-server:latest-cuda
+    container_name: voip-whisper
+    ports:
+      - "9090:8000"
+    environment:
+      - WHISPER_MODEL=base
+      - WHISPER_LANGUAGE=en
+      - WHISPER_DEVICE=cpu
+      - WHISPER_COMPUTE_TYPE=int8
+    volumes:
+      - whisper-cache:/root/.cache
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # Piper TTS service
+  piper:
+    image: rhasspy/wyoming-piper:latest
+    container_name: voip-piper
+    ports:
+      - "5000:10200"
+    volumes:
+      - piper-data:/data
+    command: --voice en_US-lessac-medium
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:10200/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # Vosk STT (alternative)
+  vosk:
+    image: alphacep/kaldi-en:latest
+    container_name: voip-vosk
+    ports:
+      - "2700:2700"
+    volumes:
+      - vosk-model:/opt/vosk-model
+    restart: unless-stopped
+    profiles:
+      - vosk
+
+  # VoIP Server
+  voip-server:
+    build:
+      context: ./voip-server
+      dockerfile: Dockerfile
+    container_name: voip-server
+    ports:
+      - "8080:8080"
+      - "5060:5060/udp"
+      - "5061:5061/udp"
+    depends_on:
+      redis:
+        condition: service_healthy
+      ollama:
+        condition: service_healthy
+      whisper:
+        condition: service_healthy
+      piper:
+        condition: service_healthy
+    volumes:
+      - ./voip-server/configs:/app/configs:ro
+      - voip-logs:/var/log/voip-server
+    environment:
+      - VOIP_ENVIRONMENT=production
+      - VOIP_REDIS_HOST=redis
+      - VOIP_LLM_OLLAMA_HOST=ollama
+      - VOIP_STT_WHISPER_HOST=whisper
+      - VOIP_TTS_PIPER_HOST=piper
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+
+  # Pull models (one-time setup)
+  ollama-pull:
+    image: ollama/ollama:latest
+    container_name: voip-ollama-pull
+    depends_on:
+      ollama:
+        condition: service_healthy
+    entrypoint: >
+      bash -c "
+        sleep 5
+        curl -X POST http://ollama:11434/api/pull -d '{\"name\": \"llama3.1:8b\"}'
+      "
+    restart: "no"
+
+volumes:
+  redis-data:
+  ollama-data:
+  whisper-cache:
+  piper-data:
+  vosk-model:
+  voip-logs:
+
+networks:
+  default:
+    driver: bridge

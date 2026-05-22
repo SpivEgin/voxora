@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VoIP Agent Dashboard</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Login View */
+    #login-view {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    }
+
+    .login-box {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 3rem;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      text-align: center;
+      min-width: 400px;
+    }
+
+    .login-box h1 {
+      margin-bottom: 2rem;
+      color: #00d9ff;
+      font-size: 2rem;
+    }
+
+    .login-box input {
+      width: 100%;
+      padding: 1rem;
+      border: 2px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+      font-size: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .login-box input:focus {
+      outline: none;
+      border-color: #00d9ff;
+    }
+
+    .login-box button {
+      width: 100%;
+      padding: 1rem;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, #00d9ff 0%, #00a8cc 100%);
+      color: #1a1a2e;
+      font-size: 1rem;
+      font-weight: bold;
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+
+    .login-box button:hover {
+      transform: translateY(-2px);
+    }
+
+    /* Agent View */
+    #agent-view {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+
+    /* Header */
+    .header {
+      background: rgba(0, 0, 0, 0.3);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .header h1 {
+      color: #00d9ff;
+      font-size: 1.5rem;
+    }
+
+    .header-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    #current-agent {
+      color: #00d9ff;
+    }
+
+    #connection-status {
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: bold;
+    }
+
+    #connection-status.connected {
+      background: rgba(0, 217, 255, 0.2);
+      color: #00d9ff;
+    }
+
+    #connection-status.disconnected {
+      background: rgba(255, 65, 65, 0.2);
+      color: #ff4141;
+    }
+
+    .header button {
+      padding: 0.5rem 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 6px;
+      background: transparent;
+      color: #fff;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .header button:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* Main Content */
+    .main-content {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    /* Call List */
+    .call-list-panel {
+      width: 350px;
+      background: rgba(0, 0, 0, 0.2);
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-header {
+      padding: 1rem;
+      background: rgba(0, 0, 0, 0.3);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .panel-header button {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.8rem;
+      background: rgba(0, 217, 255, 0.2);
+      border: 1px solid rgba(0, 217, 255, 0.3);
+      color: #00d9ff;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    #call-list {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0.5rem;
+    }
+
+    .call-item {
+      padding: 1rem;
+      margin-bottom: 0.5rem;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .call-item:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .call-item.selected {
+      background: rgba(0, 217, 255, 0.15);
+      border-left: 3px solid #00d9ff;
+    }
+
+    .call-item.empty {
+      text-align: center;
+      color: #666;
+      cursor: default;
+    }
+
+    .call-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .call-header .status {
+      margin-right: 0.5rem;
+    }
+
+    .call-header .caller-id {
+      flex: 1;
+      font-weight: bold;
+    }
+
+    .call-header .duration {
+      color: #00d9ff;
+      font-family: monospace;
+    }
+
+    .call-details {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: #aaa;
+    }
+
+    .call-details .intent {
+      color: #ffd700;
+    }
+
+    /* Right Panel */
+    .right-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Transcript */
+    .transcript-panel {
+      flex: 2;
+      display: flex;
+      flex-direction: column;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    #transcript {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1rem;
+    }
+
+    .transcript-entry {
+      margin-bottom: 1rem;
+      padding: 1rem;
+      border-radius: 8px;
+      max-width: 80%;
+    }
+
+    .transcript-entry.caller {
+      background: rgba(0, 217, 255, 0.1);
+      margin-right: auto;
+    }
+
+    .transcript-entry.llm {
+      background: rgba(255, 215, 0, 0.1);
+      margin-left: auto;
+    }
+
+    .transcript-entry.agent {
+      background: rgba(138, 43, 226, 0.1);
+      margin-left: auto;
+    }
+
+    .transcript-entry .entry-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      font-size: 0.85rem;
+    }
+
+    .transcript-entry.caller .speaker {
+      color: #00d9ff;
+    }
+
+    .transcript-entry.llm .speaker {
+      color: #ffd700;
+    }
+
+    .transcript-entry.agent .speaker {
+      color: #8a2be2;
+    }
+
+    .transcript-entry .time {
+      color: #666;
+    }
+
+    .transcript-entry .text {
+      line-height: 1.5;
+    }
+
+    /* Call Info */
+    .info-panel {
+      height: 200px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #call-info {
+      flex: 1;
+      padding: 1rem;
+      overflow-y: auto;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .info-row label {
+      color: #888;
+    }
+
+    .info-row .confidence {
+      font-weight: bold;
+    }
+
+    .info-row .confidence.low {
+      color: #ff4141;
+    }
+
+    .info-row .confidence.medium {
+      color: #ffd700;
+    }
+
+    .info-row .confidence.high {
+      color: #00ff00;
+    }
+
+    /* Action Buttons */
+    .action-panel {
+      padding: 1rem;
+      background: rgba(0, 0, 0, 0.2);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    .action-btn {
+      padding: 0.75rem 1.5rem;
+      border: none;
+      border-radius: 6px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .action-btn.accept {
+      background: linear-gradient(135deg, #00ff00 0%, #00cc00 100%);
+      color: #1a1a2e;
+    }
+
+    .action-btn.reject {
+      background: linear-gradient(135deg, #ff4141 0%, #cc0000 100%);
+      color: #fff;
+    }
+
+    .action-btn.terminate {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    .action-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    /* Notifications */
+    #notifications {
+      position: fixed;
+      top: 1rem;
+      right: 1rem;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .notification {
+      padding: 1rem 1.5rem;
+      background: rgba(0, 0, 0, 0.9);
+      border-left: 4px solid #00d9ff;
+      border-radius: 4px;
+      color: #fff;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateX(100%);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+
+    /* Transfer Dialog */
+    #transfer-dialog {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 2000;
+    }
+
+    .transfer-modal {
+      background: #1a1a2e;
+      padding: 2rem;
+      border-radius: 12px;
+      max-width: 500px;
+      width: 90%;
+      text-align: center;
+      border: 1px solid rgba(0, 217, 255, 0.3);
+    }
+
+    .transfer-modal h2 {
+      color: #00d9ff;
+      margin-bottom: 1rem;
+    }
+
+    .transfer-modal p {
+      margin-bottom: 1.5rem;
+      color: #aaa;
+    }
+
+    .transfer-modal .buttons {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+    }
+
+    /* Utility */
+    .hidden {
+      display: none !important;
+    }
+
+    .empty {
+      text-align: center;
+      color: #666;
+      padding: 2rem;
+      font-style: italic;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+  </style>
+</head>
+<body>
+  <!-- Login View -->
+  <div id="login-view">
+    <div class="login-box">
+      <h1>🔊 VoIP Agent Dashboard</h1>
+      <input type="text" id="agent-id" placeholder="Enter Agent ID" autocomplete="off" />
+      <button id="login-btn">Login</button>
+    </div>
+  </div>
+
+  <!-- Agent Dashboard -->
+  <div id="agent-view" class="hidden">
+    <header class="header">
+      <h1>🔊 VoIP Agent Dashboard</h1>
+      <div class="header-info">
+        <span id="current-agent"></span>
+        <span id="connection-status" class="disconnected">Disconnected</span>
+        <button id="refresh-btn">🔄 Refresh</button>
+        <button id="logout-btn">Logout</button>
+      </div>
+    </header>
+
+    <div class="main-content">
+      <!-- Call List -->
+      <div class="call-list-panel">
+        <div class="panel-header">
+          <span>Active Calls</span>
+          <button id="clear-completed">Clear</button>
+        </div>
+        <div id="call-list">
+          <div class="call-item empty">No active calls</div>
+        </div>
+      </div>
+
+      <!-- Right Panel -->
+      <div class="right-panel">
+        <!-- Transcript -->
+        <div class="transcript-panel">
+          <div class="panel-header">Transcript</div>
+          <div id="transcript">
+            <div class="empty">Select a call to view transcript</div>
+          </div>
+        </div>
+
+        <!-- Call Info -->
+        <div class="info-panel">
+          <div class="panel-header">Call Information</div>
+          <div id="call-info">
+            <div class="empty">Select a call to view details</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-panel">
+      <button id="accept-btn" class="action-btn accept" disabled>
+        ✓ Accept (F1)
+      </button>
+      <button id="reject-btn" class="action-btn reject" disabled>
+        ✕ Reject (F2)
+      </button>
+      <button id="terminate-btn" class="action-btn terminate" disabled>
+        ⏹ Terminate (F3)
+      </button>
+    </div>
+  </div>
+
+  <!-- Notifications -->
+  <div id="notifications"></div>
+
+  <!-- Transfer Dialog -->
+  <div id="transfer-dialog" class="hidden">
+    <div class="transfer-modal">
+      <h2>🎯 Transfer Request</h2>
+      <div id="transfer-content"></div>
+      <div class="buttons">
+        <button id="accept-transfer" class="action-btn accept">Accept</button>
+        <button id="reject-transfer" class="action-btn reject">Reject</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="main.dart.js"></script>
+</body>
+</html>

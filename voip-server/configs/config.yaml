@@ -1,0 +1,289 @@
+# VoIP Server Configuration
+# Self-hosted LLM Voice Routing System
+
+server:
+  name: "voip-server"
+  version: "1.0.0"
+  environment: "development"  # development, staging, production
+  
+  # Network configuration
+  sip:
+    enabled: true
+    host: "0.0.0.0"
+    port: 5060
+    tls_port: 5061
+    domain: "localhost"
+    user_agent: "VoIP-Server/1.0"
+    
+    # Authentication
+    auth:
+      enabled: false  # Set to true for production
+      realm: "voip.local"
+      
+  # WebSocket for audio streaming
+  websocket:
+    enabled: true
+    host: "0.0.0.0"
+    port: 8080
+    path: "/ws"
+    
+  # REST API
+  rest:
+    enabled: true
+    host: "0.0.0.0"
+    port: 8080
+    tls_enabled: false
+    
+  # gRPC API
+  grpc:
+    enabled: true
+    host: "0.0.0.0"
+    port: 50051
+    tls_enabled: false
+
+# Redis session store
+redis:
+  host: "localhost"
+  port: 6379
+  password: ""
+  database: 0
+  pool_size: 10
+  min_idle_conns: 5
+
+# Webhook providers (Twilio, SignalWire, etc.)
+webhooks:
+  enabled: false
+  providers:
+    - name: "twilio"
+      account_sid: ""  # Set from env or secrets
+      auth_token: ""
+      webhook_url: "/webhooks/twilio"
+      
+    - name: "signalwire"
+      project_id: ""
+      api_token: ""
+      webhook_url: "/webhooks/signalwire"
+
+# Speech-to-Text Configuration
+stt:
+  # Primary engine
+  engine: "whisper"  # whisper, vosk
+  
+  # Whisper configuration (faster-whisper)
+  whisper:
+    host: "localhost"
+    port: 9090
+    model: "base"  # tiny, base, small, medium, large-v3
+    language: "en"
+    device: "cpu"  # cpu, cuda
+    compute_type: "int8"  # int8, float16, float32
+    
+  # Vosk configuration (fallback)
+  vosk:
+    host: "localhost"
+    port: 2700
+    model_path: "/opt/vosk-model"
+    sample_rate: 16000
+
+# LLM Configuration
+llm:
+  # Backend: ollama, vllm, localai
+  backend: "ollama"
+  
+  # Ollama configuration
+  ollama:
+    host: "localhost"
+    port: 11434
+    model: "llama3.1:8b"  # llama3.1:8b, mistral:7b, phi3:mini
+    temperature: 0.7
+    max_tokens: 512
+    timeout: 30  # seconds
+    
+    # System prompt for call routing
+    system_prompt: |
+      You are a helpful voice assistant for a customer service system.
+      Your job is to understand the caller's intent and help them or route to a human agent when appropriate.
+      
+      Respond in a natural, conversational way. Keep responses concise and clear for voice.
+      
+      IMPORTANT: You must respond with valid JSON in this format:
+      {
+        "response": "Your spoken response to the caller",
+        "transfer_to_agent": false,
+        "reason": null,
+        "confidence": 0.85,
+        "intent": "billing_inquiry|technical_support|sales|complaint|refund|emergency|general"
+      }
+      
+      Set transfer_to_agent to true if:
+      - The caller explicitly asks for a human agent
+      - You detect an emergency situation
+      - The issue requires human judgment (refunds, complaints, billing disputes)
+      - Your confidence is below 0.6
+
+  # vLLM configuration (alternative)
+  vllm:
+    host: "localhost"
+    port: 8000
+    model: "meta-llama/Meta-Llama-3-8B-Instruct"
+    
+  # LocalAI configuration (alternative)
+  localai:
+    host: "localhost"
+    port: 8080
+    model: "gpt-4"
+
+# Text-to-Speech Configuration
+tts:
+  # Primary engine: piper, coqui, kokoro
+  engine: "piper"
+  
+  # Piper TTS configuration (fast, lightweight)
+  piper:
+    host: "localhost"
+    port: 5000
+    voice: "en_US-lessac-medium"
+    speed: 1.0
+    
+  # Coqui TTS configuration (high quality)
+  coqui:
+    host: "localhost"
+    port: 5002
+    model: "tts_models/en/vctk/vits"
+    
+  # Kokoro TTS (if available)
+  kokoro:
+    host: "localhost"
+    port: 8880
+    voice: "af"
+
+# Call Transfer Configuration
+transfer:
+  # Enable automatic transfers based on conditions
+  enabled: true
+  
+  # Transfer conditions
+  conditions:
+    # Caller explicitly requests human
+    caller_requests_human: true
+    
+    # LLM confidence threshold (below this = transfer)
+    confidence_threshold: 0.6
+    
+    # Intent triggers for immediate transfer
+    intent_triggers:
+      - "complaint"
+      - "refund"
+      - "emergency"
+      - "billing_dispute"
+      - "legal"
+      - "supervisor"
+    
+    # Maximum LLM turn count before transfer
+    max_llm_turns: 10
+    
+    # Maximum call duration in seconds
+    max_call_duration: 600  # 10 minutes
+    
+    # Profanity/abuse detection
+    abuse_detection: true
+    
+    # Silence timeout
+    silence_timeout: 30  # seconds
+
+  # Transfer targets
+  targets:
+    - name: "sales"
+      sip_uri: "sip:sales@queue.local"
+      priority: 1
+      
+    - name: "support"
+      sip_uri: "sip:support@queue.local"
+      priority: 2
+      
+    - name: "billing"
+      sip_uri: "sip:billing@queue.local"
+      priority: 3
+      
+    - name: "emergency"
+      sip_uri: "sip:emergency@queue.local"
+      priority: 0
+      available_24h: true
+
+# Agent Configuration
+agents:
+  # Default agent queue
+  queue:
+    name: "default"
+    max_wait_time: 300  # seconds
+    
+  # Agent authentication
+  auth:
+    enabled: true
+    jwt_secret: ""  # Set from environment
+    token_expiry: 3600  # seconds
+
+# Audio Pipeline
+audio:
+  # Sample rate
+  sample_rate: 16000
+  
+  # Frame duration in milliseconds
+  frame_duration: 20
+  
+  # Codecs
+  codecs:
+    - "opus"
+    - "pcmu"
+    - "pcma"
+    
+  # Buffer size
+  buffer_size: 320  # samples (20ms at 16kHz)
+  
+  # Silence detection
+  silence_detection:
+    enabled: true
+    threshold: -40  # dB
+    hangover: 20   # frames
+
+# Logging
+logging:
+  level: "info"  # debug, info, warn, error
+  format: "json"  # json, console
+  output: "stdout"  # stdout, file
+  file: "/var/log/voip-server.log"
+  
+# Metrics
+metrics:
+  enabled: true
+  port: 9090
+  path: "/metrics"
+  
+# Security
+security:
+  # TLS configuration
+  tls:
+    enabled: false
+    cert_file: ""
+    key_file: ""
+    
+  # SRTP for media
+  srtp:
+    enabled: true
+    crypto_suites:
+      - "AES_CM_128_HMAC_SHA1_80"
+      - "AES_CM_128_HMAC_SHA1_32"
+      
+  # Rate limiting
+  rate_limit:
+    enabled: true
+    requests_per_second: 100
+    burst: 50
+
+# Testing
+test:
+  # Test mode disables actual LLM/STT/TTS calls
+  mock_services: false
+  
+  # Test audio file
+  test_audio: ""
