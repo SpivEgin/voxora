@@ -1,0 +1,194 @@
+# =============================================================================
+# VoIP Server with LLM Voice Routing — .gitignore
+# GNU General Public License v3.0 (GPL-3.0)
+# =============================================================================
+
+# ─── Go Build Artifacts ──────────────────────────────────────────────────────
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+*.prof
+*.cov
+
+voip-server/voip-server
+voip-server/tui-agent
+voip-server/build/
+voip-server/dist/
+voip-server/.build/
+voip-server/bin/
+voip-server/vendor/
+
+# Go module cache (if stored locally)
+voip-server/go.sum.bak
+
+# ─── Dart / Flutter Build Artifacts ──────────────────────────────────────────
+agent-web/.dart_tool/
+agent-web/build/
+agent-web/pubspec.lock
+agent-web/.packages
+agent-web/.flutter-plugins
+agent-web/.flutter-plugins-dependencies
+agent-web/web/main.dart.js
+agent-web/web/main.dart.js.map
+agent-web/web/*.dart.js
+agent-web/web/*.dart.js.map
+
+# Dart generated files
+*.g.dart
+*.freezed.dart
+*.mocks.dart
+
+# Flutter specific
+.flutter-version
+android/
+ios/
+linux/
+macos/
+windows/
+web/.dart_tool/
+
+# ─── Docker / Deployment ─────────────────────────────────────────────────────
+*.env
+.env.local
+.env.*.local
+
+# Docker volumes and data (if copied locally)
+data/
+volumes/
+*.volume
+*.db
+*.sqlite
+*.sqlite3
+
+# ─── IDE / Editor Files ──────────────────────────────────────────────────────
+# JetBrains (GoLand, IntelliJ, etc.)
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Visual Studio Code
+.vscode/
+*.code-workspace
+.history/
+
+# Vim / Emacs
+*.swp
+*.swo
+*~
+.#*
+
+# Neovim
+.nvim.lua
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# ─── OS Generated Files ──────────────────────────────────────────────────────
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+*~
+.cache/
+
+# ─── Logs, Coverage, and Reports ─────────────────────────────────────────────
+*.log
+*.log.*
+logs/
+coverage/
+*.cover
+*.coverage
+.nyc_output/
+
+# Test reports
+test-results/
+reports/
+junit.xml
+
+# Benchmark results
+benchstat.txt
+*.bench
+
+# ─── Temporary / Backup Files ────────────────────────────────────────────────
+tmp/
+temp/
+*.tmp
+*.bak
+*.backup
+*.orig
+*.rej
+*.patch
+*.diff
+
+# ─── Security / Secrets ──────────────────────────────────────────────────────
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+secrets.yaml
+secrets.yml
+secrets.json
+*.secret
+.credentials
+
+# Config overrides (local-only)
+config.local.yaml
+config.dev.yaml
+config.prod.yaml
+
+# ─── Documentation Build ─────────────────────────────────────────────────────
+docs/_build/
+docs/site/
+*.html.pdf
+.sass-cache/
+
+# ─── Misc ────────────────────────────────────────────────────────────────────
+*.pid
+*.seed
+*.pid.lock
+
+# Node modules (if any JS tooling added later)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python virtual environments (if any Python scripts)
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+__pycache__/
+*.py[cod]
+
+# Binary releases
+dist/
+release/
+releases/
+artifacts/
+*.tar.gz
+*.zip
+*.deb
+*.rpm
+*.msi
+*.dmg
