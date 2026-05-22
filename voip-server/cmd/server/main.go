@@ -209,6 +209,12 @@ func initLogger(cfg *config.LoggingConfig, environment string) (*zap.Logger, err
 		level = zap.ErrorLevel
 	}
 
+	// Validate output path - default to stdout if empty or invalid
+	outputPath := cfg.Output
+	if outputPath == "" || outputPath == "stdout" {
+		outputPath = "stdout"
+	}
+
 	config := zap.Config{
 		Level:       zap.NewAtomicLevelAt(level),
 		Development: environment == "development",
@@ -227,7 +233,7 @@ func initLogger(cfg *config.LoggingConfig, environment string) (*zap.Logger, err
 			EncodeDuration: zapcore.SecondsDurationEncoder,
 			EncodeCaller:   zapcore.ShortCallerEncoder,
 		},
-		OutputPaths:      []string{cfg.Output},
+		OutputPaths:      []string{outputPath},
 		ErrorOutputPaths: []string{"stderr"},
 	}
 

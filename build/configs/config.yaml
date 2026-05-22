@@ -1,0 +1,41 @@
+server:
+    sip:
+        enabled: true
+        host: "0.0.0.0"
+        port: 5060
+
+    websocket:
+        enabled: true
+        port: 8080
+
+    rest:
+        enabled: true
+        port: 8080
+
+stt:
+    engine: "whisper" # or "vosk"
+    whisper:
+        host: "localhost"
+        port: 9090
+        model: "base"
+
+llm:
+    backend: "ollama"
+    ollama:
+        host: "192.168.1.193"
+        port: 80
+        model: "deepseek-v4-flash:cloud"
+
+tts:
+    engine: "piper" # or "coqui", "kokoro"
+    piper:
+        host: "localhost"
+        port: 5000
+
+transfer:
+    enabled: true
+    conditions:
+        caller_requests_human: true
+        confidence_threshold: 0.6
+        intent_triggers: ["complaint", "refund", "emergency"]
+        max_llm_turns: 10
