@@ -194,14 +194,6 @@ technological measures.
 
   4. Conveying Verbatim Copies.
 
-  You may convey verbatim copies of the Program's source code as you
-receive it, in any medium, provided that you conspicuously and
-appropriately publish on each copy an appropriate copyright notice;
-keep intact all notices stating that this License and any
-non-permissive terms added in accord with section 7 apply to the code;
-keep intact all notices of the absence of any warranty; and give all
-recipients a copy of this License along with the Program.
-
   You may charge any price or no price for each copy that you convey,
 and you may offer support or warranty protection for a fee.
 
@@ -268,9 +260,9 @@ in one of these ways:
 
     c) Convey individual copies of the object code with a copy of the
     written offer to provide the Corresponding Source.  This
-    alternative is allowed only occasionally and noncommercially, and
-    only if you received the object code with such an offer, in accord
-    with subsection 6b.
+    alternative is allowed only occasionally and noncommercially,
+    and only if you received the object code with such an offer, in
+    accord with subsection 6b.
 
     d) Convey the object code by offering access from a designated
     place (gratis or for a charge), and offer equivalent access to the
@@ -285,10 +277,10 @@ in one of these ways:
     Corresponding Source, you remain obligated to ensure that it is
     available for as long as needed to satisfy these requirements.
 
-    e) Convey the object code using peer-to-peer transmission, provided
-    you inform other peers where the object code and Corresponding
-    Source of the work are being offered to the general public at no
-    charge under subsection 6d.
+    e) Convey the object code using peer-to-peer transmission,
+    provided you inform other peers where the object code and
+    Corresponding Source of the work are being offered to the general
+    public at no charge under subsection 6d.
 
   A separable portion of the object code, whose source code is excluded
 from the Corresponding Source as a System Library, need not be
@@ -352,10 +344,10 @@ under those permissions, but the entire Program remains governed by
 this License without regard to the additional permissions.
 
   When you convey a copy of a covered work, you may at your option
-remove any additional permissions from that copy, or from any part of
-it.  (Additional permissions may be written to require their own
-removal in certain cases when you modify the work.)  You may place
-additional permissions on material, added by you to a covered work,
+remove any additional permissions from that copy, or from any of its
+component parts.  (Additional permissions may be written to require
+their own removal in certain cases when you modify the work.)  You may
+place additional permissions on material, added by you to a covered work,
 for which you have or can give appropriate copyright permission.
 
   Notwithstanding any other provision of this License, for material you
@@ -401,8 +393,8 @@ additional terms that apply to those files, or a notice indicating
 where to find the applicable terms.
 
   Additional terms, permissive or non-permissive, may be stated in the
-form of a separately written license, or stated as exceptions;
-the above requirements apply either way.
+form of a separately written license, or stated as exceptions; the
+above requirements apply either way.
 
   8. Termination.
 
@@ -463,10 +455,11 @@ the predecessor has it or can get it with reasonable efforts.
   You may not impose any further restrictions on the exercise of the
 rights granted or affirmed under this License.  For example, you may
 not impose a license fee, royalty, or other charge for exercise of
-rights granted under this License, and you may not initiate litigation
-(including a cross-claim or counterclaim in a lawsuit) alleging that
-any patent claim is infringed by making, using, selling, offering for
-sale, or importing the Program or any portion of it.
+rights granted under this License, and you may not initiate
+litigation (including a cross-claim or counterclaim in a lawsuit)
+alleging that any patent claim is infringed by making, using,
+selling, offering for sale, or importing the Program or any portion of
+it.
 
   11. Patents.
 
@@ -474,68 +467,35 @@ sale, or importing the Program or any portion of it.
 License of the Program or a work on which the Program is based.  The
 work thus licensed is called the contributor's "contributor version".
 
-  A contributor's "essential patent claims" are all patent claims
-owned or controlled by the contributor, whether already acquired or
-hereafter acquired, that would be infringed by some manner, permitted
-by this License, of making, using, or selling its contributor version,
-but do not include claims that would be infringed only as a
-consequence of further modification of the contributor version.  For
-purposes of this definition, "control" includes the right to grant
-patent sublicenses in a manner consistent with the requirements of
-this License.
+  A contributor's "essential patent claims" are all patent claims owned
+or controlled by the contributor, whether already acquired or hereafter
+acquired, that would be infringed by some manner, permitted by this
+License, of making, using, or selling its contributor version, but do
+not include claims that would be infringed only as a consequence of
+further modification of the contributor version.  For purposes of this
+definition, "control" includes the right to grant patent sublicenses
+in a manner consistent with the requirements of this License.
 
   Each contributor grants you a non-exclusive, worldwide, royalty-free
-patent license under the contributor's essential patent claims, to
-make, use, sell, offer for sale, import and otherwise run, modify and
+patent license under the contributor's essential patent claims to make,
+use, sell, offer to sell, import, and otherwise run, modify and
 propagate the contents of its contributor version.
 
   In the following three paragraphs, a "patent license" is any express
-agreement or commitment, however denominated, not to enforce a patent
-(such as an express permission to practice a patent or covenant not to
-sue for patent infringement).  To "grant" such a patent license to a
-party means to make such an agreement or commitment not to enforce a
-patent against the party.
+commitment or other form of agreement to limit the use of a patent
+(including to grant licenses under that patent), regardless of any
+individual who receives the conveyance or whether the patent license
+is express or implied.  A patent license is "discriminatory" if it does
+not include within the scope of its coverage the right to make, use
+or sell the Program, prohibits the exercise of, or is conditioned on
+the non-exercise of any rights granted under this License.
 
-  If you convey a covered work, knowingly relying on a patent license,
-and the Corresponding Source of the work is not available for anyone
-to copy, free of charge and under the terms of this License, through a
-publicly available network server or other readily accessible means,
-then you must either (1) cause the Corresponding Source to be so
-available, or (2) arrange to deprive yourself of the benefit of the
-patent license for this particular work, or (3) arrange, in a manner
-consistent with the requirements of this License, to extend the patent
-license to downstream recipients.  "Knowingly relying" means you have
-actual knowledge that, but for the patent license, your conveying the
-covered work in a country, or your recipient's use of the covered work
-in a country, would infringe one or more identifiable patents in that
-country that you have reason to believe are valid.
+  If you convey a covered work, you must either: (a) accompany it with
+the corresponding Corresponding Source conveyed in a manner consistent
+with this License, or (b) accompany it with a written offer, valid for
+at least three years, to provide the Corresponding Source at no charge.
 
-  If, pursuant to or in connection with a single transaction or
-arrangement, you convey, or propagate by procuring conveyance of, a
-covered work, and grant a patent license to some of the parties
-receiving the covered work authorizing them to use, propagate, modify
-or convey a specific copy of the covered work, then the patent license
-you grant is automatically extended to all recipients of the covered
-work and works based on it.
-
-  A patent license is "discriminatory" if it does not include within
-the scope of its coverage, prohibits the exercise of, or is
-conditioned on the non-exercise of one or more of the rights that are
-specifically granted under this License.  You may not convey a covered
-work if you are a party to an arrangement with a third party that is
-in the business of distributing software, under which you make payment
-to the third party based on the extent of your activity of conveying
-the work, and under which the third party grants, to any of the
-parties who would receive the covered work from you, a discriminatory
-patent license (a) in connection with copies of the covered work
-conveyed by you (or copies made from those copies), or (b) primarily
-for and in connection with specific products or compilations that
-contain the covered work, unless you entered into that arrangement,
-or that patent license was granted, prior to 28 March 2007.
-
-  Nothing in this License shall be construed as excluding or limiting
-any implied license or other defenses to infringement that may
-otherwise be available to you under applicable patent law.
+  The Corresponding Source for a work means the source code for the work.
 
   12. No Surrender of Others' Freedom.
 
@@ -562,10 +522,10 @@ combination as such.
 
   14. Revised Versions of this License.
 
-  The Free Software Foundation may publish revised and/or new versions of
-the GNU General Public License from time to time.  Such new versions will
-be similar in spirit to the present version, but may differ in detail to
-address new problems or concerns.
+  The Free Software Foundation may publish revised and/or new versions
+of the GNU General Public License from time to time.  Such new versions
+will be similar in spirit to the present version, but may differ in
+detail to address new problems or concerns.
 
   Each version is given a distinguishing version number.  If the
 Program specifies that a certain numbered version of the GNU General
@@ -573,18 +533,13 @@ Public License "or any later version" applies to it, you have the
 option of following the terms and conditions either of that numbered
 version or of any later version published by the Free Software
 Foundation.  If the Program does not specify a version number of the
-GNU General Public License, you may choose any version ever published
-by the Free Software Foundation.
+GNU General Public License, you may choose any version ever published by
+the Free Software Foundation.
 
   If the Program specifies that a proxy can decide which future
 versions of the GNU General Public License can be used, that proxy's
 public statement of acceptance of a version permanently authorizes you
 to choose that version for the Program.
-
-  Later license versions may give you additional or different
-permissions.  However, no additional obligations are imposed on any
-author or copyright holder as a result of your choosing to follow a
-later version.
 
   15. Disclaimer of Warranty.
 
@@ -601,13 +556,13 @@ ALL NECESSARY SERVICING, REPAIR OR CORRECTION.
 
   IN NO EVENT UNLESS REQUIRED BY APPLICABLE LAW OR AGREED TO IN WRITING
 WILL ANY COPYRIGHT HOLDER, OR ANY OTHER PARTY WHO MODIFIES AND/OR CONVEYS
-THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES, INCLUDING ANY
-GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF THE
-USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED TO LOSS OF
-DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR THIRD
-PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER PROGRAMS),
-EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE POSSIBILITY OF
-SUCH DAMAGES.
+THE PROGRAM AS PERMITTED ABOVE, BE LIABLE TO YOU FOR DAMAGES, INCLUDING
+ANY GENERAL, SPECIAL, INCIDENTAL OR CONSEQUENTIAL DAMAGES ARISING OUT OF
+THE USE OR INABILITY TO USE THE PROGRAM (INCLUDING BUT NOT LIMITED TO LOSS
+OF DATA OR DATA BEING RENDERED INACCURATE OR LOSSES SUSTAINED BY YOU OR
+THIRD PARTIES OR A FAILURE OF THE PROGRAM TO OPERATE WITH ANY OTHER
+PROGRAMS), EVEN IF SUCH HOLDER OR OTHER PARTY HAS BEEN ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGES.
 
   17. Interpretation of Sections 15 and 16.
 
@@ -653,20 +608,20 @@ Also add information on how to contact you by electronic and paper mail.
 notice like this when it starts in an interactive mode:
 
     <program>  Copyright (C) <year>  <name of author>
-    This program comes with ABSOLUTELY NO WARRANTY; for details type `show w'.
+    This program comes with ABSOLUTELY NO WARRANTY; for details type 'show w'.
     This is free software, and you are welcome to redistribute it
-    under certain conditions; type `show c' for details.
+    under certain conditions; type 'show c' for details.
 
-The hypothetical commands `show w' and `show c' should show the appropriate
+The hypothetical commands 'show w' and 'show c' should show the appropriate
 parts of the General Public License.  Of course, your program's commands
 might be different; for a GUI interface, you would use an "about box".
 
   You should also get your employer (if you work as a programmer) or school,
 if any, to sign a "copyright disclaimer" for the program, if necessary.
-For more information on this, and how to apply and follow the GNU GPL, see
-<https://www.gnu.org/licenses/>.
+For more information on this, and how to apply and follow the GNU GPL,
+see <https://www.gnu.org/licenses/>.
 
-  The GNU General Public License does not permit incorporating your program
+The GNU General Public License does not permit incorporating your program
 into proprietary programs.  If your program is a subroutine library, you
 may consider it more useful to permit linking proprietary applications with
 the library.  If this is what you want to do, use the GNU Lesser General
