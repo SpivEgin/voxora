@@ -1,6 +1,25 @@
 name: voip-server
 services:
-  # Redis for session state
+  # CockroachDB — primary durable datastore
+  cockroachdb:
+    image: cockroachdb/cockroach:latest-v24.1
+    container_name: voip-cockroachdb
+    command: start-single-node --insecure --store=type=pebble,path=/cockroach/crdb-data --listen-addr=0.0.0.0:26257 --sql-addr=0.0.0.0:26258 --http-addr=0.0.0.0:8081
+    ports:
+      - "26257:26257"   # SQL port
+      - "26258:26258"   # PostgreSQL wire protocol
+      - "8081:8081"     # Admin UI
+    volumes:
+      - cockroach-data:/cockroach/crdb-data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8081/health?ready=1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Redis for session state (hot cache / pub-sub)
   redis:
     image: redis:7-alpine
     container_name: voip-redis
@@ -93,6 +112,8 @@ services:
       - "5060:5060/udp"
       - "5061:5061/udp"
     depends_on:
+      cockroachdb:
+        condition: service_healthy
       redis:
         condition: service_healthy
       ollama:
@@ -106,6 +127,7 @@ services:
       - voip-logs:/var/log/voip-server
     environment:
       - VOIP_ENVIRONMENT=production
+      - VOIP_COCKROACHDB_HOST=cockroachdb
       - VOIP_REDIS_HOST=redis
       - VOIP_LLM_OLLAMA_HOST=ollama
       - VOIP_STT_WHISPER_HOST=whisper
@@ -128,11 +150,60 @@ services:
     entrypoint: >
       bash -c "
         sleep 5
-        curl -X POST http://ollama:11434/api/pull -d '{\"name\": \"llama3.1:8b\"}'
+        curl -X POST http://ollama:11434/api/pull -d '{"name": "llama3.1:8b"}'
+      "
+    restart: "no"
+
+  # CockroachDB init (create database + schema)
+  cockroach-init:
+    image: cockroachdb/cockroach:latest-v24.1
+    container_name: voip-cockroach-init
+    depends_on:
+      cockroachdb:
+        condition: service_healthy
+    entrypoint: >
+      bash -c "
+        sleep 5 &&
+        cockroach sql --insecure --host=cockroachdb:26257 -e \"CREATE DATABASE IF NOT EXISTS voip;\" &&
+        cockroach sql --insecure --host=cockroachdb:26257 -d voip -e \"
+        CREATE TABLE IF NOT EXISTS call_sessions (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            state VARCHAR(32) NOT NULL,
+            caller_id VARCHAR(64) NOT NULL,
+            caller_number VARCHAR(32),
+            called_number VARCHAR(32),
+            direction VARCHAR(16) DEFAULT 'inbound',
+            start_time TIMESTAMPTZ DEFAULT now(),
+            end_time TIMESTAMPTZ,
+            duration_seconds INT DEFAULT 0,
+            llm_turn_count INT DEFAULT 0,
+            intent VARCHAR(64),
+            confidence FLOAT,
+            agent_id VARCHAR(64),
+            agent_name VARCHAR(128),
+            transfer_reason VARCHAR(256),
+            created_at TIMESTAMPTZ DEFAULT now(),
+            updated_at TIMESTAMPTZ DEFAULT now()
+        );
+        CREATE INDEX IF NOT EXISTS idx_calls_state ON call_sessions(state);
+        CREATE INDEX IF NOT EXISTS idx_calls_caller ON call_sessions(caller_id);
+        CREATE INDEX IF NOT EXISTS idx_calls_time ON call_sessions(start_time DESC);
+        CREATE INDEX IF NOT EXISTS idx_calls_agent ON call_sessions(agent_id) WHERE agent_id IS NOT NULL;
+        CREATE TABLE IF NOT EXISTS transcripts (
+            id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+            session_id UUID NOT NULL REFERENCES call_sessions(id) ON DELETE CASCADE,
+            speaker VARCHAR(32) NOT NULL,
+            text TEXT NOT NULL,
+            audio_url VARCHAR(512),
+            timestamp TIMESTAMPTZ DEFAULT now()
+        );
+        CREATE INDEX IF NOT EXISTS idx_transcripts_session ON transcripts(session_id, timestamp DESC);
+        \"
       "
     restart: "no"
 
 volumes:
+  cockroach-data:
   redis-data:
   ollama-data:
   whisper-cache:

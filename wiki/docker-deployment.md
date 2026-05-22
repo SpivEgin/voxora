@@ -29,10 +29,11 @@ curl -X POST http://localhost:11434/api/pull \
 
 | Service | Port | Purpose |
 |---------|------|---------|
-| voip-redis | 6379 | Session state store |
+| voip-redis | 6379 | Hot cache / pub-sub |
 | voip-ollama | 11434 | LLM inference engine |
 | voip-whisper | 9090 | Speech-to-text |
 | voip-piper | 5000 | Text-to-speech |
+| voip-cockroachdb | 26257, 26258, 8081 | Distributed SQL database |
 | voip-server | 8080, 5060 | Main VoIP server |
 
 ## Docker Compose Configuration
@@ -50,6 +51,21 @@ services:
       - "6379:6379"
     volumes:
       - redis-data:/data
+    restart: unless-stopped
+
+  cockroachdb:
+    image: cockroachdb/cockroach:latest
+    container_name: voip-cockroachdb
+    ports:
+      - "26257:26257"
+      - "26258:26258"
+      - "8081:8081"
+    volumes:
+      - cockroach-data:/cockroach/cockroach-data
+    environment:
+      - COCKROACH_USER=root
+      - COCKROACH_INSECURE=true
+    command: start-single-node --insecure --store=type=mem,size=1GB --http-addr=0.0.0.0:8081 --sql-addr=0.0.0.0:26257 --listen-addr=0.0.0.0:26258
     restart: unless-stopped
 
   ollama:
@@ -95,6 +111,7 @@ services:
       - "5060:5060/udp"
     depends_on:
       - redis
+      - cockroachdb
       - ollama
       - whisper
       - piper
@@ -149,6 +166,9 @@ Set these in `docker-compose.yml` or `.env` file:
 | `VOIP_LLM_OLLAMA_HOST` | ollama | Ollama hostname |
 | `VOIP_STT_WHISPER_HOST` | whisper | Whisper hostname |
 | `VOIP_TTS_PIPER_HOST` | piper | Piper hostname |
+| `VOIP_COCKROACHDB_HOST` | cockroachdb | CockroachDB hostname |
+| `VOIP_COCKROACHDB_PORT` | 26257 | CockroachDB SQL port |
+| `VOIP_COCKROACHDB_SSL_MODE` | disable | SSL mode for CockroachDB |
 | `VOIP_LOG_LEVEL` | info | Log verbosity |
 
 ## Scaling
@@ -196,6 +216,7 @@ The following volumes are created:
 | ollama-data | Ollama | Downloaded models (4GB+) |
 | whisper-cache | Whisper | Model cache |
 | piper-data | Piper | Voice data |
+| cockroach-data | CockroachDB | Persistent transactional data |
 
 ### Backup
 
@@ -203,6 +224,10 @@ The following volumes are created:
 # Backup Redis
 docker exec voip-redis redis-cli BGSAVE
 docker cp voip-redis:/data/dump.rdb ./backup/
+
+# Backup CockroachDB
+docker exec voip-cockroachdb cockroach sql --insecure -e "BACKUP DATABASE * INTO 'nodelocal://1/backups'"
+docker cp voip-cockroachdb:/cockroach/cockroach-data/backups ./backup/cockroachdb/
 
 # Backup Ollama models
 docker cp voip-ollama:/root/.ollama ./backup/
@@ -214,6 +239,10 @@ docker cp voip-ollama:/root/.ollama ./backup/
 # Restore Redis
 docker cp ./backup/dump.rdb voip-redis:/data/
 docker restart voip-redis
+
+# Restore CockroachDB
+docker cp ./backup/cockroachdb/ voip-cockroachdb:/cockroach/cockroach-data/restores/
+docker exec voip-cockroachdb cockroach sql --insecure -e "RESTORE DATABASE * FROM 'nodelocal://1/restores' WITH OPTIONS (skip_missing_foreign_keys)"
 ```
 
 ## Network Configuration

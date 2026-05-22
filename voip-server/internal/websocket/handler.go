@@ -13,6 +13,7 @@ import (
 	
 	"voip-server/internal/audio"
 	"voip-server/internal/state"
+	"voip-server/internal/types"
 )
 
 // Server manages WebSocket connections
@@ -278,7 +279,7 @@ func (c *Client) handleAcceptTransfer(payload map[string]interface{}) {
 		return
 	}
 
-	if err := c.Server.callManager.UpdateState(ctx, sessionID, state.StateLiveAgent); err != nil {
+	if err := c.Server.callManager.UpdateState(ctx, sessionID, types.StateLiveAgent); err != nil {
 		c.sendError(err.Error())
 		return
 	}

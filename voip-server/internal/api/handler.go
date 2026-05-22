@@ -13,6 +13,7 @@ import (
 	"voip-server/internal/llm"
 	"voip-server/internal/sip"
 	"voip-server/internal/state"
+	"voip-server/internal/types"
 	"voip-server/internal/stt"
 	"voip-server/internal/tts"
 	"voip-server/internal/transfer"
@@ -122,9 +123,9 @@ func (h *Handler) readinessCheck(c *fiber.Ctx) error {
 func (h *Handler) listCalls(c *fiber.Ctx) error {
 	callState := c.Query("state")
 	
-	var calls []*state.CallSession
+	var calls []*types.CallSession
 	if callState != "" {
-		calls = h.callManager.GetSessionsByState(state.CallState(callState))
+		calls = h.callManager.GetSessionsByState(types.CallState(callState))
 	} else {
 		calls = h.callManager.GetActiveSessions()
 	}
@@ -187,7 +188,7 @@ func (h *Handler) terminateCall(c *fiber.Ctx) error {
 	callID := c.Params("id")
 
 	ctx := context.Background()
-	if err := h.callManager.UpdateState(ctx, callID, state.StateTerminated); err != nil {
+	if err := h.callManager.UpdateState(ctx, callID, types.StateTerminated); err != nil {
 		return c.Status(http.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
 		})
@@ -435,7 +436,7 @@ func (h *WebhookHandlers) HandleTwilio(c *fiber.Ctx) error {
 			h.logger.Error("Failed to create session", zap.Error(err))
 		}
 	case "completed":
-		h.callManager.UpdateState(ctx, callSID, state.StateTerminated)
+		h.callManager.UpdateState(ctx, callSID, types.StateTerminated)
 		h.callManager.CloseSession(ctx, callSID)
 	}
 

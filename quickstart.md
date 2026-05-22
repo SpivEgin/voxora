@@ -17,7 +17,15 @@ Get your self-hosted VoIP system with LLM voice routing up and running in minute
 cd voipbox
 
 # Start all services in detached mode
+# Start all services including CockroachDB (primary datastore)
 docker-compose up -d
+
+# Wait for CockroachDB to initialize
+sleep 10
+
+# Verify CockroachDB is ready
+curl http://localhost:8081/health?ready=1
+
 
 # Wait for services to initialize (30-60 seconds)
 sleep 30
@@ -284,6 +292,10 @@ server:
 docker-compose logs -f
 
 # Specific service
+# View CockroachDB init logs
+docker-compose logs -f cockroach-init
+
+# View VoIP server logs
 docker-compose logs -f voip-server
 docker-compose logs -f ollama
 docker-compose logs -f whisper

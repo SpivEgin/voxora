@@ -10,6 +10,7 @@ import (
 	"voip-server/internal/config"
 	"voip-server/internal/llm"
 	"voip-server/internal/state"
+	"voip-server/internal/types"
 )
 
 // Engine evaluates transfer conditions and executes transfers
@@ -205,7 +206,7 @@ func (e *Engine) processTransfers(ctx context.Context) {
 			}
 			
 			// Update call state
-			if err := e.callManager.UpdateState(ctx, request.SessionID, state.StateTransferring); err != nil {
+			if err := e.callManager.UpdateState(ctx, request.SessionID, types.StateTransferring); err != nil {
 				e.logger.Error("Failed to update state for transfer",
 					zap.String("session_id", request.SessionID),
 					zap.Error(err))
@@ -221,7 +222,7 @@ func (e *Engine) processTransfers(ctx context.Context) {
 
 			// For now, transition to live agent state
 			// In production, this would involve SIP REFER or bridging
-			if err := e.callManager.UpdateState(ctx, request.SessionID, state.StateLiveAgent); err != nil {
+			if err := e.callManager.UpdateState(ctx, request.SessionID, types.StateLiveAgent); err != nil {
 				e.logger.Error("Failed to transition to live agent",
 					zap.String("session_id", request.SessionID),
 					zap.Error(err))

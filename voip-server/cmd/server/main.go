@@ -18,6 +18,7 @@ import (
 	"voip-server/internal/api"
 	"voip-server/internal/audio"
 	"voip-server/internal/config"
+	"voip-server/internal/db"
 	"voip-server/internal/llm"
 	"voip-server/internal/sip"
 	"voip-server/internal/state"
@@ -45,11 +46,20 @@ func main() {
 		zap.String("version", cfg.Server.Version),
 		zap.String("environment", cfg.Server.Environment))
 
-	// Initialize Redis client
+	// Initialize CockroachDB (primary durable datastore)
+	crdb, err := db.New(&cfg.CockroachDB, logger)
+	if err != nil {
+		logger.Fatal("Failed to initialize CockroachDB", zap.Error(err))
+	}
+	if crdb != nil {
+		defer crdb.Close()
+	}
+
+	// Initialize Redis client (caching layer + pub-sub)
 	redisClient := initRedis(&cfg.Redis, logger)
 
-	// Initialize call manager
-	callManager := state.NewCallManager(redisClient)
+	// Initialize call manager (CockroachDB primary, Redis cache)
+	callManager := state.NewCallManager(crdb, redisClient)
 
 	// Initialize SIP server
 	var sipServer *sip.Server

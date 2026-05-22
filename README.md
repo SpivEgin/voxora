@@ -10,21 +10,31 @@ A comprehensive VoIP server with self-hosted LLM voice routing, STT, TTS, and ag
 ├─────────────────────────────────────────────────────────────────────────┤
 │                                                                         │
 │  ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────────┐ │
-│  │   SIP Handler   │◄──►│  Audio Pipeline  │◄──►│    STT Engine     │ │
-│  │   (sipgo)       │    │   (WebSocket)    │    │  (Whisper/Vosk)   │ │
+│  │   SIP Handler   │◄──►│  Audio Pipeline  │◄──►│    STT Engine       │ │
+│  │   (sipgo)       │    │   (WebSocket)    │    │  (Whisper/Vosk)     │ │
 │  └────────┬────────┘    └──────────────────┘    └─────────────────────┘ │
+│           │                                                             │
+│           │    ┌──────────────────────────────────────────────────┐       │
+│           │    │  CockroachDB — Primary Durable Datastore       │       │
+│           │    │  (pgx, PostgreSQL wire protocol, JSONB)       │       │
+│           │    └──────────────────────────────────────────────────┘       │
 │           │                                                             │
 │           ▼                                                             │
 │  ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────────┐ │
-│  │   Call State    │◄──►│  LLM Inference   │◄──►│    TTS Engine       │ │
-│  │    Machine      │    │ (Ollama/vLLM)    │    │ (Piper/Coqui/Kokoro)│ │
-│  └────────┬────────┘    └──────────────────┘    └─────────────────────┘ │
+│  │   Call State    │◄──►│  CockroachDB     │◄──►│    Redis Cache      │ │
+│  │    Machine      │    │  (Primary Store) │    │  (Hot Cache /       │ │
+│  └────────┬────────┘    └──────────────────┘    │   Pub-Sub)          │ │
+│           │                                      └─────────────────────┘ │
 │           │                                                             │
 │           ▼                                                             │
 │  ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────────┐ │
-│  │ Transfer Logic  │◄──►│  Session Store   │◄──►│   Agent Dashboard   │ │
-│  │  (SIP REFER)    │    │    (Redis)       │    │  (CLI/TUI + Web)  │ │
+│  │ Transfer Logic  │◄──►│  LLM Inference   │◄──►│    TTS Engine       │ │
+│  │  (SIP REFER)    │    │ (Ollama/vLLM)    │    │  (Piper/Coqui)      │ │
 │  └─────────────────┘    └──────────────────┘    └─────────────────────┘ │
+│                                                                         │
+│  ┌─────────────────────────────────────────────────────────────────────┐ │
+│  │                    Agent Dashboards (TUI + Web)                       │ │
+│  └─────────────────────────────────────────────────────────────────────┘ │
 │                                                                         │
 └─────────────────────────────────────────────────────────────────────────┘
 ```
@@ -45,6 +55,29 @@ A comprehensive VoIP server with self-hosted LLM voice routing, STT, TTS, and ag
 ### Agent Interfaces
 - **CLI/TUI**: Terminal-based agent interface using tview
 - **Web Dashboard**: Pure Dart Web (no Flutter) browser interface
+
+## Technology Stack
+
+| Layer | Technology | Notes |
+|-------|-----------|-------|
+| **SIP** | Go + sipgo | UDP/TCP signaling |
+| **Audio** | WebSocket + RTP/SRTP | Bidirectional streaming |
+| **STT** | faster-whisper + Vosk | Self-hosted |
+| **LLM** | Ollama / vLLM | Self-hosted |
+| **TTS** | Piper + Coqui + Kokoro | Self-hosted |
+| **Primary Store** | **CockroachDB** | PostgreSQL-compatible, distributed, durable |
+| **Hot Cache** | Redis | Session cache + pub-sub |
+| **API** | Go REST + gRPC + WebSocket | Fiber framework |
+| **Agent UI** | Go TUI (tview) + Dart Web | No Flutter |
+| **Runtime** | Docker + Docker Compose | Full containerization |
+
+### Why CockroachDB?
+- **ACID compliance** for call records
+- **Horizontal scaling** for production loads
+- **PostgreSQL wire protocol** — works with standard pgx drivers
+- **JSONB support** for flexible metadata
+- **Built-in replication** and survivability
+- **Time-travel queries** for audit recovery
 
 ## Quick Start
 
@@ -239,12 +272,14 @@ voipbox/
 │   │   └── tui-agent/       # Terminal UI agent
 │   ├── internal/
 │   │   ├── config/          # Configuration management
+│   │   ├── types/           # Shared data types (CallSession, CallState)
+│   │   ├── db/              # CockroachDB durable datastore
 │   │   ├── sip/             # SIP protocol handlers
 │   │   ├── audio/           # Audio pipeline
 │   │   ├── stt/             # Speech-to-text
 │   │   ├── llm/             # LLM integration
 │   │   ├── tts/             # Text-to-speech
-│   │   ├── state/           # Call state management
+│   │   ├── state/           # Call state management (CRDB + Redis)
 │   │   ├── transfer/        # Transfer logic
 │   │   ├── api/             # REST API
 │   │   └── websocket/       # WebSocket handlers
@@ -283,7 +318,8 @@ The system automatically transfers calls based on configurable conditions:
 
 - Concurrent call handling (50+ calls target)
 - Non-blocking audio processing with Go goroutines
-- Redis for distributed session state
+- **CockroachDB** for durable call history (PostgreSQL-compatible, distributed)
+- **Redis** for hot cache and pub-sub events
 - Configurable timeouts and resource limits
 
 ## Troubleshooting

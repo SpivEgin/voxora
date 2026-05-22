@@ -41,7 +41,27 @@ server:
     port: 50051
     tls_enabled: false
 
-# Redis session store
+# CockroachDB — Primary Durable Datastore
+# Uses PostgreSQL wire protocol (pgx driver)
+cockroachdb:
+  enabled: true
+  host: "localhost"
+  port: 26257
+  database: "voip"
+  user: "root"
+  password: ""
+  ssl_mode: "disable"       # Options: disable, require, verify-ca, verify-full
+  ssl_root_cert: ""         # Path to CA cert (for verify-* modes)
+  ssl_cert: ""              # Path to client cert
+  ssl_key: ""               # Path to client key
+  max_open_conns: 25        # Max open connections in pool
+  max_idle_conns: 5         # Max idle connections
+  conn_max_lifetime: 300    # Seconds (connection TTL)
+  conn_max_idle_time: 60    # Seconds (idle connection TTL)
+  migrations_enabled: true   # Auto-run schema migrations
+  migrations_path: "./migrations"  # Path to SQL migration files
+
+# Redis Session State Store (hot cache, pub-sub)
 redis:
   host: "localhost"
   port: 6379

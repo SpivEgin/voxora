@@ -47,6 +47,37 @@ server:
 - `tls_enabled`: Enable SIP over TLS (requires cert/key files)
 - `auth.enabled`: Enable digest authentication
 
+## CockroachDB Configuration
+
+```yaml
+cockroachdb:
+  host: "localhost"
+  port: 26257
+  database: "voipdb"
+  user: "root"
+  password: ""
+  ssl_mode: "disable"
+  ssl_root_cert: ""
+  ssl_cert: ""
+  ssl_key: ""
+  pool_size: 10
+  max_retries: 3
+  retry_delay: 1s
+  migrations:
+    enabled: true
+    path: "./migrations"
+```
+
+**SSL Mode Options:**
+- `disable`: No SSL/TLS encryption (development only)
+- `require`: SSL/TLS required, but skip certificate verification
+- `verify-ca`: Verify server certificate against CA
+- `verify-full`: Verify certificate and hostname (most secure, recommended for production)
+
+**Migration Settings:**
+- `enabled`: Automatically run database migrations on startup
+- `path`: Directory containing `.sql` migration files
+
 ### REST API & WebSocket
 
 ```yaml
@@ -330,6 +361,20 @@ VOIP_REDIS_PASSWORD=secret
 # LLM
 VOIP_LLM_OLLAMA_HOST=192.168.1.50
 VOIP_LLM_OLLAMA_MODEL="mistral:7b"
+
+# CockroachDB
+VOIP_COCKROACHDB_HOST=localhost
+VOIP_COCKROACHDB_PORT=26257
+VOIP_COCKROACHDB_DATABASE=voipdb
+VOIP_COCKROACHDB_USER=root
+VOIP_COCKROACHDB_PASSWORD=secret
+VOIP_COCKROACHDB_SSL_MODE=verify-full
+VOIP_COCKROACHDB_SSL_ROOT_CERT="/certs/ca.crt"
+VOIP_COCKROACHDB_SSL_CERT="/certs/client.crt"
+VOIP_COCKROACHDB_SSL_KEY="/certs/client.key"
+VOIP_COCKROACHDB_POOL_SIZE=10
+VOIP_COCKROACHDB_MIGRATIONS_ENABLED=true
+VOIP_COCKROACHDB_MIGRATIONS_PATH="./migrations"
 
 # STT
 VOIP_STT_WHISPER_DEVICE="cuda"

@@ -11,10 +11,11 @@ import (
 	"voip-server/internal/config"
 	"voip-server/internal/llm"
 	"voip-server/internal/state"
+	"voip-server/internal/types"
 )
 
 func TestEngine_Evaluate(t *testing.T) {
-	cm := state.NewCallManager(nil)
+	cm := state.NewCallManager(nil, nil)
 	cfg := &config.TransferConfig{
 		Enabled: true,
 		Conditions: config.TransferConditions{
@@ -147,7 +148,7 @@ func TestEngine_findBestTarget(t *testing.T) {
 }
 
 func TestEngine_RequestTransfer(t *testing.T) {
-	cm := state.NewCallManager(nil)
+	cm := state.NewCallManager(nil, nil)
 	cfg := &config.TransferConfig{
 		Enabled: true,
 		Targets: []config.TransferTarget{
@@ -174,5 +175,5 @@ func TestEngine_RequestTransfer(t *testing.T) {
 
 	// Verify state changed to LIVE_AGENT (transfers immediately transition)
 	updated, _ := cm.GetSession(ctx, session.ID)
-	assert.Equal(t, state.StateLiveAgent, updated.State)
+	assert.Equal(t, types.StateLiveAgent, updated.State)
 }

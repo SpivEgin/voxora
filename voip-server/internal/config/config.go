@@ -10,19 +10,20 @@ import (
 
 // Config represents the complete application configuration
 type Config struct {
-	Server   ServerConfig   `mapstructure:"server"`
-	Redis    RedisConfig    `mapstructure:"redis"`
-	Webhooks WebhooksConfig `mapstructure:"webhooks"`
-	STT      STTConfig      `mapstructure:"stt"`
-	LLM      LLMConfig      `mapstructure:"llm"`
-	TTS      TTSConfig      `mapstructure:"tts"`
-	Transfer TransferConfig `mapstructure:"transfer"`
-	Agents   AgentsConfig   `mapstructure:"agents"`
-	Audio    AudioConfig    `mapstructure:"audio"`
-	Logging  LoggingConfig  `mapstructure:"logging"`
-	Metrics  MetricsConfig  `mapstructure:"metrics"`
-	Security SecurityConfig `mapstructure:"security"`
-	Test     TestConfig     `mapstructure:"test"`
+	Server      ServerConfig      `mapstructure:"server"`
+	CockroachDB CockroachDBConfig `mapstructure:"cockroachdb"`
+	Redis       RedisConfig       `mapstructure:"redis"`
+	Webhooks    WebhooksConfig    `mapstructure:"webhooks"`
+	STT         STTConfig         `mapstructure:"stt"`
+	LLM         LLMConfig         `mapstructure:"llm"`
+	TTS         TTSConfig         `mapstructure:"tts"`
+	Transfer    TransferConfig    `mapstructure:"transfer"`
+	Agents      AgentsConfig      `mapstructure:"agents"`
+	Audio       AudioConfig       `mapstructure:"audio"`
+	Logging     LoggingConfig     `mapstructure:"logging"`
+	Metrics     MetricsConfig     `mapstructure:"metrics"`
+	Security    SecurityConfig    `mapstructure:"security"`
+	Test        TestConfig        `mapstructure:"test"`
 }
 
 // ServerConfig contains server-related settings
@@ -78,6 +79,26 @@ type GRPCConfig struct {
 	Host       string `mapstructure:"host"`
 	Port       int    `mapstructure:"port"`
 	TLSEnabled bool   `mapstructure:"tls_enabled"`
+}
+
+// CockroachDBConfig contains CockroachDB settings
+type CockroachDBConfig struct {
+	Enabled           bool   `mapstructure:"enabled"`
+	Host              string `mapstructure:"host"`
+	Port              int    `mapstructure:"port"`
+	Database          string `mapstructure:"database"`
+	User              string `mapstructure:"user"`
+	Password          string `mapstructure:"password"`
+	SSLMode           string `mapstructure:"ssl_mode"`
+	SSLRootCert       string `mapstructure:"ssl_root_cert"`
+	SSLCert           string `mapstructure:"ssl_cert"`
+	SSLKey            string `mapstructure:"ssl_key"`
+	MaxOpenConns      int    `mapstructure:"max_open_conns"`
+	MaxIdleConns      int    `mapstructure:"max_idle_conns"`
+	ConnMaxLifetime   int    `mapstructure:"conn_max_lifetime"`
+	ConnMaxIdleTime   int    `mapstructure:"conn_max_idle_time"`
+	MigrationsEnabled bool   `mapstructure:"migrations_enabled"`
+	MigrationsPath    string `mapstructure:"migrations_path"`
 }
 
 // RedisConfig contains Redis settings
@@ -340,6 +361,19 @@ func setDefaults() {
 	viper.SetDefault("server.websocket.port", 8080)
 	viper.SetDefault("server.rest.port", 8080)
 	viper.SetDefault("server.grpc.port", 50051)
+	// CockroachDB defaults
+	viper.SetDefault("cockroachdb.enabled", true)
+	viper.SetDefault("cockroachdb.host", "localhost")
+	viper.SetDefault("cockroachdb.port", 26257)
+	viper.SetDefault("cockroachdb.database", "voip")
+	viper.SetDefault("cockroachdb.user", "root")
+	viper.SetDefault("cockroachdb.ssl_mode", "disable")
+	viper.SetDefault("cockroachdb.max_open_conns", 25)
+	viper.SetDefault("cockroachdb.max_idle_conns", 5)
+	viper.SetDefault("cockroachdb.conn_max_lifetime", 300)
+	viper.SetDefault("cockroachdb.conn_max_idle_time", 60)
+	viper.SetDefault("cockroachdb.migrations_enabled", true)
+	viper.SetDefault("cockroachdb.migrations_path", "./migrations")
 	viper.SetDefault("redis.port", 6379)
 	viper.SetDefault("stt.whisper.port", 9090)
 	viper.SetDefault("stt.vosk.port", 2700)

@@ -7,7 +7,7 @@
 - **CPU**: 4 cores (8+ recommended for concurrent calls)
 - **RAM**: 8GB (16GB+ recommended with LLM)
 - **Storage**: 20GB free space
-- **Network**: Ports 5060/udp, 8080/tcp, 6379/tcp available
+- **Network**: Ports 5060/udp, 8080/tcp, 6379/tcp, 26257/tcp, 26258/tcp, 8081/tcp available
 
 ### Recommended for Production
 - **CPU**: 8+ cores (for 50+ concurrent calls)
@@ -31,7 +31,7 @@ make install       # Or: make deps
 make build
 
 # Start services
-make docker-up     # Starts Redis, Ollama, Whisper, Piper
+make docker-up     # Starts Redis, CockroachDB, Ollama, Whisper, Piper
 
 # Pull LLM model (one-time, ~4GB)
 make docker-pull-models
@@ -60,6 +60,14 @@ make build
 # 6. Start services manually
 # Redis
 docker run -d -p 6379:6379 redis:7-alpine
+
+# CockroachDB
+docker run -d \
+  --name voip-cockroachdb \
+  -p 26257:26257 \
+  -p 26258:26258 \
+  -p 8081:8081 \
+  cockroachdb/cockroach:latest start-single-node --insecure --store=type=mem,size=1GB --http-addr=0.0.0.0:8081 --sql-addr=0.0.0.0:26257 --listen-addr=0.0.0.0:26258
 
 # Ollama
 docker run -d -p 11434:11434 ollama/ollama:latest
@@ -134,6 +142,9 @@ curl -X POST http://localhost:8080/api/v1/test/create \
 ```bash
 # Check server health
 curl http://localhost:8080/health
+
+# Check CockroachDB health
+curl http://localhost:8081/health?ready=1
 
 # Check all services
 make status

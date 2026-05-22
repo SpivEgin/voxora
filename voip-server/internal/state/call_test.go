@@ -7,10 +7,12 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+
+	"voip-server/internal/types"
 )
 
 func TestCallManager_CreateSession(t *testing.T) {
-	cm := NewCallManager(nil)
+	cm := NewCallManager(nil, nil)
 	ctx := context.Background()
 
 	session, err := cm.CreateSession(ctx, "caller123", "+1234567890", "+0987654321")
@@ -18,7 +20,7 @@ func TestCallManager_CreateSession(t *testing.T) {
 	require.NotNil(t, session)
 
 	assert.NotEmpty(t, session.ID)
-	assert.Equal(t, StateIncoming, session.State)
+	assert.Equal(t, types.StateIncoming, session.State)
 	assert.Equal(t, "caller123", session.CallerID)
 	assert.Equal(t, "+1234567890", session.CallerNumber)
 	assert.Equal(t, "+0987654321", session.CalledNumber)
@@ -28,7 +30,7 @@ func TestCallManager_CreateSession(t *testing.T) {
 }
 
 func TestCallManager_GetSession(t *testing.T) {
-	cm := NewCallManager(nil)
+	cm := NewCallManager(nil, nil)
 	ctx := context.Background()
 
 	// Create session
@@ -47,7 +49,7 @@ func TestCallManager_GetSession(t *testing.T) {
 }
 
 func TestCallManager_UpdateState(t *testing.T) {
-	cm := NewCallManager(nil)
+	cm := NewCallManager(nil, nil)
 	ctx := context.Background()
 
 	session, err := cm.CreateSession(ctx, "caller123", "+1234567890", "+0987654321")
@@ -55,14 +57,14 @@ func TestCallManager_UpdateState(t *testing.T) {
 
 	// Test valid state transitions
 	tests := []struct {
-		from CallState
-		to   CallState
+		from types.CallState
+		to   types.CallState
 		ok   bool
 	}{
-		{StateIncoming, StateLLMRouting, true},
-		{StateLLMRouting, StateLiveAgent, true},
-		{StateLiveAgent, StateTerminated, true},
-		{StateTerminated, StateIncoming, false},
+		{types.StateIncoming, types.StateLLMRouting, true},
+		{types.StateLLMRouting, types.StateLiveAgent, true},
+		{types.StateLiveAgent, types.StateTerminated, true},
+		{types.StateTerminated, types.StateIncoming, false},
 	}
 
 	for _, tt := range tests {
@@ -78,13 +80,13 @@ func TestCallManager_UpdateState(t *testing.T) {
 }
 
 func TestCallManager_AddTranscriptEntry(t *testing.T) {
-	cm := NewCallManager(nil)
+	cm := NewCallManager(nil, nil)
 	ctx := context.Background()
 
 	session, err := cm.CreateSession(ctx, "caller123", "+1234567890", "+0987654321")
 	require.NoError(t, err)
 
-	entry := TranscriptEntry{
+	entry := types.TranscriptEntry{
 		Timestamp: time.Now(),
 		Speaker:   "caller",
 		Text:      "Hello, I need help",
@@ -101,16 +103,16 @@ func TestCallManager_AddTranscriptEntry(t *testing.T) {
 }
 
 func TestCallManager_GetActiveSessions(t *testing.T) {
-	cm := NewCallManager(nil)
+	cm := NewCallManager(nil, nil)
 	ctx := context.Background()
 
 	// Create active session
 	session1, _ := cm.CreateSession(ctx, "caller1", "+1", "+2")
-	_ = cm.UpdateState(ctx, session1.ID, StateLLMRouting)
+	_ = cm.UpdateState(ctx, session1.ID, types.StateLLMRouting)
 
 	// Create and terminate session
 	session2, _ := cm.CreateSession(ctx, "caller2", "+3", "+4")
-	_ = cm.UpdateState(ctx, session2.ID, StateTerminated)
+	_ = cm.UpdateState(ctx, session2.ID, types.StateTerminated)
 
 	active := cm.GetActiveSessions()
 	assert.Len(t, active, 1)
@@ -118,28 +120,28 @@ func TestCallManager_GetActiveSessions(t *testing.T) {
 }
 
 func TestCallManager_GetSessionsByState(t *testing.T) {
-	cm := NewCallManager(nil)
+	cm := NewCallManager(nil, nil)
 	ctx := context.Background()
 
 	// Create sessions
 	session1, _ := cm.CreateSession(ctx, "caller1", "+1", "+2")
-	_ = cm.UpdateState(ctx, session1.ID, StateLLMRouting)
+	_ = cm.UpdateState(ctx, session1.ID, types.StateLLMRouting)
 
 	session2, _ := cm.CreateSession(ctx, "caller2", "+3", "+4")
-	_ = cm.UpdateState(ctx, session2.ID, StateLLMRouting)
+	_ = cm.UpdateState(ctx, session2.ID, types.StateLLMRouting)
 
 	session3, _ := cm.CreateSession(ctx, "caller3", "+5", "+6")
-	_ = cm.UpdateState(ctx, session3.ID, StateLiveAgent)
+	_ = cm.UpdateState(ctx, session3.ID, types.StateLiveAgent)
 
-	llmSessions := cm.GetSessionsByState(StateLLMRouting)
+	llmSessions := cm.GetSessionsByState(types.StateLLMRouting)
 	assert.Len(t, llmSessions, 2)
 
-	agentSessions := cm.GetSessionsByState(StateLiveAgent)
+	agentSessions := cm.GetSessionsByState(types.StateLiveAgent)
 	assert.Len(t, agentSessions, 1)
 }
 
 func TestCallManager_CloseSession(t *testing.T) {
-	cm := NewCallManager(nil)
+	cm := NewCallManager(nil, nil)
 	ctx := context.Background()
 
 	session, err := cm.CreateSession(ctx, "caller123", "+1234567890", "+0987654321")
@@ -151,33 +153,33 @@ func TestCallManager_CloseSession(t *testing.T) {
 	// Verify session is terminated
 	updated, err := cm.GetSession(ctx, session.ID)
 	require.NoError(t, err)
-	assert.Equal(t, StateTerminated, updated.State)
+	assert.Equal(t, types.StateTerminated, updated.State)
 	assert.NotNil(t, updated.EndTime)
 }
 
 func TestCallState_CanTransitionTo(t *testing.T) {
 	tests := []struct {
-		state    CallState
-		target   CallState
+		state    types.CallState
+		target   types.CallState
 		expected bool
 	}{
-		{StateIncoming, StateLLMRouting, true},
-		{StateIncoming, StateTerminated, true},
-		{StateIncoming, StateLiveAgent, true},
-		{StateIncoming, StateOnHold, false},
-		{StateLLMRouting, StateLiveAgent, true},
-		{StateLLMRouting, StateTerminated, true},
-		{StateLLMRouting, StateTransferring, true},
-		{StateLLMRouting, StateIncoming, false},
-		{StateLiveAgent, StateOnHold, true},
-		{StateLiveAgent, StateTerminated, true},
-		{StateTerminated, StateIncoming, false},
-		{StateTerminated, StateLLMRouting, false},
+		{types.StateIncoming, types.StateLLMRouting, true},
+		{types.StateIncoming, types.StateTerminated, true},
+		{types.StateIncoming, types.StateLiveAgent, true},
+		{types.StateIncoming, types.StateOnHold, false},
+		{types.StateLLMRouting, types.StateLiveAgent, true},
+		{types.StateLLMRouting, types.StateTerminated, true},
+		{types.StateLLMRouting, types.StateTransferring, true},
+		{types.StateLLMRouting, types.StateIncoming, false},
+		{types.StateLiveAgent, types.StateOnHold, true},
+		{types.StateLiveAgent, types.StateTerminated, true},
+		{types.StateTerminated, types.StateIncoming, false},
+		{types.StateTerminated, types.StateLLMRouting, false},
 	}
 
 	for _, tt := range tests {
 		result := tt.state.CanTransitionTo(tt.target)
-		assert.Equal(t, tt.expected, result, 
+		assert.Equal(t, tt.expected, result,
 			"Expected %s->%s to be %v", tt.state, tt.target, tt.expected)
 	}
 }

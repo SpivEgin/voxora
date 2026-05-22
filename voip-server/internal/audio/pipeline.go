@@ -11,6 +11,7 @@ import (
 	"voip-server/internal/config"
 	"voip-server/internal/llm"
 	"voip-server/internal/state"
+	"voip-server/internal/types"
 	"voip-server/internal/stt"
 	"voip-server/internal/tts"
 	"voip-server/internal/transfer"
@@ -248,7 +249,7 @@ func (p *Pipeline) processUtterance(session *AudioSession) {
 	session.mutex.Unlock()
 
 	// Add transcript entry to call session
-	entry := state.TranscriptEntry{
+	entry := types.TranscriptEntry{
 		Timestamp: time.Now(),
 		Speaker:   "caller",
 		Text:      result.Text,
@@ -296,7 +297,7 @@ func (p *Pipeline) processUtterance(session *AudioSession) {
 	}
 
 	// Add LLM response to transcript
-	entry = state.TranscriptEntry{
+	entry = types.TranscriptEntry{
 		Timestamp: time.Now(),
 		Speaker:   "llm",
 		Text:      llmResult.Response,

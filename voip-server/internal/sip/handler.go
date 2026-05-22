@@ -11,8 +11,9 @@ import (
 	"github.com/emiago/sipgo/sip"
 	"go.uber.org/zap"
 	
-	"voip-server/internal/config"
+  "voip-server/internal/config"
 	"voip-server/internal/state"
+	"voip-server/internal/types"
 )
 
 // Server represents the SIP server
@@ -34,7 +35,7 @@ type CallContext struct {
 	From         *sip.Uri
 	To           *sip.Uri
 	Contact      *sip.Uri
-	State        state.CallState
+	State        types.CallState
 	CreatedAt    time.Time
 	RemoteAddr   net.Addr
 	AudioHandler AudioHandler
@@ -160,7 +161,7 @@ func (s *Server) terminateCall(sessionID string) error {
 	ctx := context.Background()
 	
 	// Update call state
-	if err := s.callManager.UpdateState(ctx, sessionID, state.StateTerminated); err != nil {
+	if err := s.callManager.UpdateState(ctx, sessionID, types.StateTerminated); err != nil {
 		s.logger.Warn("Failed to update call state",
 			zap.String("session_id", sessionID),
 			zap.Error(err))
@@ -215,14 +216,14 @@ func (h *Handlers) handleInvite(req *sip.Request, tx sip.ServerTransaction) {
 		CallID:     callID,
 		From:       &from,
 		To:         &to,
-		State:      state.StateIncoming,
+		State:      types.StateIncoming,
 		CreatedAt:  time.Now(),
 	}
 
 	h.server.addCallContext(callCtx)
 
 	// Update state to LLM routing
-	if err := h.server.callManager.UpdateState(ctx, session.ID, state.StateLLMRouting); err != nil {
+	if err := h.server.callManager.UpdateState(ctx, session.ID, types.StateLLMRouting); err != nil {
 		h.logger.Error("Failed to update call state", zap.Error(err))
 	}
 
@@ -371,7 +372,7 @@ func (s *Server) TransferCall(sessionID, targetURI string) error {
 
 	// Update state
 	ctx := context.Background()
-	if err := s.callManager.UpdateState(ctx, sessionID, state.StateTransferring); err != nil {
+	if err := s.callManager.UpdateState(ctx, sessionID, types.StateTransferring); err != nil {
 		return fmt.Errorf("failed to update state: %w", err)
 	}
 
